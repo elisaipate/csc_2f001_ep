@@ -7,8 +7,9 @@ LDFLAGS=
 LIBS=
 CXXFLAGS=-std=c++20 -Wall -Werror -g
 BIN=bilbao
-OBJS=main.o
+OBJS=main.o location.o
 
+main.o location.o: location.h
 all: $(BIN)
 
 # Step 2: link the object files into the binary
