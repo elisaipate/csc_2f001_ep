@@ -1,6 +1,6 @@
-.SUFFIXES:         # remove all the implicit rules (avoid conflicts with our own rules)
-.SECONDARY:        # all files are intermediate (keep them, otherwise they are removed)
-.PHONY: all clean  # these targets are not files (even if a file named "all" or "clean" exists, the rule is applied)
+.SUFFIXES:
+.SECONDARY:
+.PHONY: all clean
 
 LDFLAGS=
 LIBS=
@@ -9,11 +9,18 @@ BIN=army-pokemon
 
 all: $(BIN)
 
-army-pokemon: main.o monster.o
+army-pokemon: main.o monster.o army-pokemon.o
 	gcc $(LDFLAGS) -o $@ $^ $(LIBS)
 
-%.o: %.c monster.h macro.h
+main.o: main.c monster.h army.h macro.h
+	gcc $(CFLAGS) -o $@ -c $<
+
+monster.o: monster.c monster.h macro.h
+	gcc $(CFLAGS) -o $@ -c $<
+
+army-pokemon.o: army-pokemon.c army.h monster.h macro.h
 	gcc $(CFLAGS) -o $@ -c $<
 
 clean:
-	rm -f $(BIN) *.o *~ 
+	rm -f $(BIN) *.o *~
+ 
