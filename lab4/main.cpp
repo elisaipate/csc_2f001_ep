@@ -1,4 +1,4 @@
-#include "location.cpp"
+#include "location.h"
 #include <iostream>
 
 using namespace std;
@@ -65,5 +65,7 @@ int main() {
       new location_t *[] { &bilbao, &sansebastian, &pau, nullptr });
   bilbao.set_neighbors(
       new location_t *[] { &sansebastian, &pampelune, nullptr });
+  cout << "Distance between Palaiseau and Paris: "
+       << palaiseau.distance_to(&paris) << " km" << endl;
   return 0;
 }
