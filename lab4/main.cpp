@@ -1,4 +1,5 @@
 #include "location.h"
+#include "shortest_path.h"
 #include <iostream>
 
 using namespace std;
@@ -65,6 +66,10 @@ int main() {
       new location_t *[] { &bilbao, &sansebastian, &pau, nullptr });
   bilbao.set_neighbors(
       new location_t *[] { &sansebastian, &pampelune, nullptr });
+  shortest_path_t path(&palaiseau, &bilbao);
+  path.compute();
+  path.display();
+
   cout << "Distance between Palaiseau and Paris: "
        << palaiseau.distance_to(&paris) << " km" << endl;
   return 0;
