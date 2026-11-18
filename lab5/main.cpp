@@ -144,29 +144,41 @@ struct frame_t : list_t {
       if (sym->is(pair->at(0)->to_string()))
         return pair->at(1);
     }
-    error("Symbol not found: " + sym->to_string());
+    error("symbol not found: " + sym->to_string());
   }
 };
 
+struct set_t : keyword_t {
+  set_t() : keyword_t("set!") {}
+
+  node_t *apply(list_t *list, frame_t *frame) {
+    if (list->size() != 3)
+      error("error at list size of set!");
+
+    node_t *sym = list->at(1);
+    node_t *value = list->at(2)->eval(frame);
+
+    frame->set(sym, value);
+
+    return value;
+  }
+};
 node_t *symbol_t::eval(frame_t *frame) { return frame->get(this); }
 
 int main() {
+
   node_t *add = new add_t;
-  symbol_t *a = new symbol_t{"a"};
+  node_t *set = new set_t;
+  symbol_t *x = new symbol_t{"x"};
   frame_t *frame = new frame_t;
 
-  frame->set(a, new integer_t{37});
-
   list_t *ast = new list_t;
-
-  ast->append(add);
-  ast->append(new list_t);
-  ast->at(1)->as_list()->append(add);
-  ast->at(1)->as_list()->append(a);
-  ast->at(1)->as_list()->append(new integer_t{2});
-  ast->append(new integer_t{3});
+  ast->append(set);
+  ast->append(x);
+  ast->append(new integer_t{42});
 
   cout << ast->to_string() << " => " << ast->eval(frame)->to_string() << endl;
+  cout << "x = " << frame->get(x)->to_string() << endl;
 
   return 0;
 }
