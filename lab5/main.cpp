@@ -96,14 +96,30 @@ struct list_t : node_t {
   }
 };
 
+struct keyword_t : node_t {
+  string id;
+
+  keyword_t(string s) { id = s; }
+
+  string to_string() { return "<" + id + ">"; }
+};
+
+struct add_t : keyword_t {
+  add_t() : keyword_t("+") {}
+};
+
 int main() {
+  node_t *add = new add_t;
   list_t *ast = new list_t;
 
-  ast->append(new integer_t{1});
-  ast->append(new integer_t{2});
+  ast->append(add);
+  ast->append(new list_t);
+  ast->at(1)->as_list()->append(add);
+  ast->at(1)->as_list()->append(new integer_t{1});
+  ast->at(1)->as_list()->append(new integer_t{2});
   ast->append(new integer_t{3});
 
-  cout << ast->to_string() << endl;
+  cout << ast->to_string() << " => " << ast->eval()->to_string() << endl;
 
   return 0;
 }
