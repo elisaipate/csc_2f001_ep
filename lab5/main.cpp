@@ -13,26 +13,28 @@ void error(string str) {
 }
 
 struct list_t;
+struct frame_t;
 
 struct node_t {
-  virtual node_t *eval() { return this; }
+  virtual node_t *eval(frame_t *frame) { return this; }
 
-  virtual node_t *apply(list_t *) { error("Cannot apply this node"); }
+  virtual node_t *apply(list_t *, frame_t *) {
+    error("Cannot apply this node");
+  }
 
   virtual string to_string() { return "???"; }
 
   virtual list_t *as_list() { error("This node is not a list"); }
 
   virtual uintptr_t int_value() { error("This node is not an integer"); }
+
+  virtual bool is(string id) { return false; }
 };
 
 struct integer_t : node_t {
   uintptr_t value;
-
   integer_t(uintptr_t v) { value = v; }
-
   string to_string() { return std::to_string(value); }
-
   uintptr_t int_value() { return value; }
 };
 
@@ -48,9 +50,7 @@ struct list_t : node_t {
   }
 
   list_t *as_list() { return this; }
-
   size_t size() { return nb_elements; }
-
   node_t *at(size_t i) {
     if (i >= nb_elements)
       error("i is out of bounds");
@@ -75,66 +75,98 @@ struct list_t : node_t {
       elements = new_pointer;
       capacity = new_capacity;
     }
-
     *(elements + nb_elements) = value;
     nb_elements++;
   }
 
   string to_string() {
     string result = "(";
-
     for (size_t i = 0; i < nb_elements; i++) {
       if (i > 0)
         result += " ";
       result += at(i)->to_string();
     }
-
     result += ")";
     return result;
   }
 
-  node_t *eval() {
+  node_t *eval(frame_t *frame) {
     if (nb_elements == 0)
       error("Cannot evaluate an empty list");
-
-    node_t *operation = at(0)->eval();
-    return operation->apply(this);
+    node_t *operation = at(0)->eval(frame);
+    return operation->apply(this, frame);
   }
 };
 
 struct keyword_t : node_t {
   string id;
-
   keyword_t(string s) { id = s; }
-
   string to_string() { return "<" + id + ">"; }
 };
 
 struct add_t : keyword_t {
   add_t() : keyword_t("+") {}
-
-  node_t *apply(list_t *list) {
+  node_t *apply(list_t *list, frame_t *frame) {
     uintptr_t sum = 0;
-
     for (size_t i = 1; i < list->size(); i++)
-      sum += list->at(i)->eval()->int_value();
-
+      sum += list->at(i)->eval(frame)->int_value();
     return new integer_t{sum};
   }
 };
 
+struct symbol_t : node_t {
+  string id;
+  symbol_t(string s) { id = s; }
+  bool is(string s) { return id == s; }
+  string to_string() { return id; }
+  node_t *eval(frame_t *frame);
+};
+
+struct frame_t : list_t {
+  void set(node_t *sym, node_t *value) {
+    for (size_t i = 0; i < size(); i++) {
+      list_t *pair = at(i)->as_list();
+      if (sym->is(pair->at(0)->to_string())) {
+        pair->set_at(1, value);
+        return;
+      }
+    }
+
+    list_t *pair = new list_t;
+    pair->append(sym);
+    pair->append(value);
+    append(pair);
+  }
+
+  node_t *get(node_t *sym) {
+    for (size_t i = 0; i < size(); i++) {
+      list_t *pair = at(i)->as_list();
+      if (sym->is(pair->at(0)->to_string()))
+        return pair->at(1);
+    }
+    error("Symbol not found: " + sym->to_string());
+  }
+};
+
+node_t *symbol_t::eval(frame_t *frame) { return frame->get(this); }
+
 int main() {
   node_t *add = new add_t;
+  symbol_t *a = new symbol_t{"a"};
+  frame_t *frame = new frame_t;
+
+  frame->set(a, new integer_t{37});
+
   list_t *ast = new list_t;
 
   ast->append(add);
   ast->append(new list_t);
   ast->at(1)->as_list()->append(add);
-  ast->at(1)->as_list()->append(new integer_t{1});
+  ast->at(1)->as_list()->append(a);
   ast->at(1)->as_list()->append(new integer_t{2});
   ast->append(new integer_t{3});
 
-  cout << ast->to_string() << " => " << ast->eval()->to_string() << endl;
+  cout << ast->to_string() << " => " << ast->eval(frame)->to_string() << endl;
 
   return 0;
 }
