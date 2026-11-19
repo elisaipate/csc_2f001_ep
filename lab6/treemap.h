@@ -50,4 +50,14 @@ template <class K, class V> struct treemap_t {
 
     return cur->value;
   }
+
+  void display(node_t *cur, string prefix) {
+    if (cur == nullptr)
+      return;
+    display(cur->left, prefix + " ");
+    cout << prefix << "(" << cur->key << ", " << cur->value << ")\n";
+    display(cur->right, prefix + " ");
+  }
+
+  void display() { display(root, ""); }
 };

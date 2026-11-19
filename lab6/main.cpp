@@ -19,5 +19,7 @@ int main() {
   map.set_at("Willem", 6);
 
   cout << map.at("Kevan") << endl;
+
+  map.display();
   return 0;
 }
