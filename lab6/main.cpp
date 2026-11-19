@@ -21,5 +21,9 @@ int main() {
   cout << map.at("Kevan") << endl;
 
   map.display();
+
+  for (auto it = map.begin(); it.cur != nullptr; it.next())
+    std::cout << it.cur->key << " => " << it.cur->value << std::endl;
+
   return 0;
 }

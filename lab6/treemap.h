@@ -7,6 +7,7 @@ template <class K, class V> struct treemap_t {
     K key;
     V value;
   };
+
   struct node_t : pair_t {
     node_t *parent, *left, *right;
     node_t(node_t *p) {
@@ -14,6 +15,31 @@ template <class K, class V> struct treemap_t {
       left = right = nullptr;
     };
   };
+
+  struct iterator_t : pair_t {
+    node_t *cur;
+    iterator_t(node_t *node) {
+      while (node->left != nullptr)
+        node = node->left;
+      cur = node;
+    };
+    void next() {
+      if (cur == nullptr)
+        return;
+      if (cur->right != nullptr) {
+        cur = cur->right;
+        while (cur->left != nullptr)
+          cur = cur->left;
+      } else {
+        while (cur->parent != nullptr && cur == cur->parent->right)
+          cur = cur->parent;
+        cur = cur->parent;
+      }
+    }
+  };
+
+  iterator_t begin() { return iterator_t(root); }
+
   node_t *root;
   treemap_t() { root = nullptr; };
   node_t *lookup(node_t **pcur, node_t *parent, const K *key, bool create) {
