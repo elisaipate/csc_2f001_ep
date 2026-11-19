@@ -1,5 +1,7 @@
 #include <iostream>
 
+using namespace std;
+
 template <class K, class V> struct treemap_t {
   struct pair_t {
     K key;
@@ -34,15 +36,18 @@ template <class K, class V> struct treemap_t {
       return lookup(&cur->left, cur, key, create);
   }
   void set_at(const K key, const V value) {
-    node_t *cur = lookup(&root, nullptr, key, true);
-    &cur->key = value;
+    node_t *cur = lookup(&root, nullptr, &key, true);
+    cur->value = value;
   }
+
   V at(const K key) {
-    node_t *cur = lookup(&root, nullptr, key, false);
+    node_t *cur = lookup(&root, nullptr, &key, false);
+
     if (cur == nullptr) {
-      std::cout << "key does not exist";
-      std::exit(EXIT_FAILURE);
+      cout << "key does not exist" << endl;
+      exit(EXIT_FAILURE);
     }
-    return &cur->key;
+
+    return cur->value;
   }
 };
